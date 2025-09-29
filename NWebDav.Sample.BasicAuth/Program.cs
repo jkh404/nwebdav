@@ -1,16 +1,30 @@
-using System;
-using System.IO;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using NWebDav.Sample.Kestrel;
 using NWebDav.Server;
 using NWebDav.Server.Authentication;
+using System;
+using System.IO;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+// 配置Kestrel服务器
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+
+
+    // 设置最大请求体大小
+    options.Limits.MaxRequestBodySize = int.MaxValue;
+    // 设置请求处理超时时间
+    options.Limits.RequestHeadersTimeout = TimeSpan.FromHours(12);
+    // 设置Keep-Alive超时时间
+    options.Limits.KeepAliveTimeout = TimeSpan.FromHours(12);
+});
 // Add NWebDAV services and set the options 
 builder.Services
     .AddNWebDav(opts => opts.RequireAuthentication = true)
