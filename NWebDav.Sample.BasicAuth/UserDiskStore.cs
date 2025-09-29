@@ -14,6 +14,7 @@ namespace NWebDav.Sample.Kestrel;
 
 public class WebDavConfig
 {
+    public string? BasePath { get; set; }
     public List<UserInfo> Users { get; set; }
 
     public class UserInfo
@@ -48,7 +49,10 @@ internal sealed class UserDiskStore : DiskStoreBase
             //Directory.CreateDirectory(path);
             //return path;
             var username = User?.Identity?.Name;
-            var result = Path.Combine(Directory.GetCurrentDirectory(),"data", username);
+            if(string.IsNullOrWhiteSpace(username))throw new AuthenticationException("not authenticated");
+            var basePath = _webDavConfig.CurrentValue.BasePath;
+            if (string.IsNullOrWhiteSpace(basePath)) basePath = Path.Combine(Directory.GetCurrentDirectory(), "WebDavData");
+            var result = Path.Combine(basePath, username);
             Directory.CreateDirectory(result);
             return result;
         }

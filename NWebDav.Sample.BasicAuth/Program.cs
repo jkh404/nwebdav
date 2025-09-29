@@ -20,8 +20,8 @@ Directory.SetCurrentDirectory(AppContext.BaseDirectory);
 // 配置Kestrel服务器
 builder.Services.Configure<KestrelServerOptions>(options =>
 {
-    options.Limits.MaxConcurrentConnections = 1000;
-    options.Limits.MaxConcurrentUpgradedConnections = 1000;
+    options.Limits.MaxConcurrentConnections = null;
+    options.Limits.MaxConcurrentUpgradedConnections = null;
     options.Limits.MinRequestBodyDataRate = null; // 禁用最小请求体数据速率限制
     options.Limits.MinResponseDataRate = null; // 禁用最小响应数据速率限制
 
