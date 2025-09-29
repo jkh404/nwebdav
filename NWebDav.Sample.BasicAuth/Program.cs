@@ -1,17 +1,21 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using NWebDav.Sample.Kestrel;
 using NWebDav.Server;
 using NWebDav.Server.Authentication;
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
+Directory.SetCurrentDirectory(AppContext.BaseDirectory);
 
 // 配置Kestrel服务器
 builder.Services.Configure<KestrelServerOptions>(options =>
@@ -25,6 +29,10 @@ builder.Services.Configure<KestrelServerOptions>(options =>
     // 设置Keep-Alive超时时间
     options.Limits.KeepAliveTimeout = TimeSpan.FromHours(12);
 });
+
+builder.Configuration.AddJsonFile("appsettings.webdav.json", optional: false, reloadOnChange: true);
+
+builder.Services.Configure<WebDavConfig>(builder.Configuration.GetSection("WebDav"));
 // Add NWebDAV services and set the options 
 builder.Services
     .AddNWebDav(opts => opts.RequireAuthentication = true)
@@ -49,7 +57,8 @@ builder.Services
             // In a real-world application, this is where you would contact
             // you identity provider and validate the credentials and determine
             // the claims.
-            if (context is { Username: "test", Password: "nwebdav" })
+            var webDavConfig=context.HttpContext.RequestServices.GetService<IOptionsMonitor<WebDavConfig>>();
+            if (webDavConfig?.CurrentValue.Users.Any(t=>t.UserName== context.Username && t.Password==context.Password) ??false)
             {
                 var claims = new[]
                 {
